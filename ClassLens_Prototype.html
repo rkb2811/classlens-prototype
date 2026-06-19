@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClassLens — Interactive Prototype</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<style>
+:root{
+  --color-background-primary:#ffffff;
+  --color-background-secondary:#f5f5f4;
+  --color-background-success:#eaf3de;
+  --color-background-warning:#faeeda;
+  --color-background-danger:#fcebeb;
+  --color-background-info:#e6f1fb;
+  --color-text-primary:#1a1a1a;
+  --color-text-secondary:#6b6b68;
+  --color-text-tertiary:#9b9b97;
+  --color-text-success:#27500a;
+  --color-text-warning:#633806;
+  --color-text-danger:#791f1f;
+  --color-text-info:#0c447c;
+  --color-border-tertiary:rgba(0,0,0,0.12);
+  --color-border-secondary:rgba(0,0,0,0.25);
+  --color-border-info:#85b7eb;
+  --color-border-danger:#f09595;
+  --color-border-success:#97c459;
+  --color-border-warning:#ef9f27;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --color-background-primary:#1c1c1a;
+    --color-background-secondary:#2c2c2a;
+    --color-background-success:#173404;
+    --color-background-warning:#412402;
+    --color-background-danger:#501313;
+    --color-background-info:#042c53;
+    --color-text-primary:#f5f5f4;
+    --color-text-secondary:#b4b2a9;
+    --color-text-tertiary:#888780;
+    --color-text-success:#c0dd97;
+    --color-text-warning:#fac775;
+    --color-text-danger:#f7c1c1;
+    --color-text-info:#b5d4f4;
+    --color-border-tertiary:rgba(255,255,255,0.12);
+    --color-border-secondary:rgba(255,255,255,0.25);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--color-background-secondary);padding:24px;min-height:100vh}
+.wrap{max-width:900px;margin:0 auto}
+.app{border:0.5px solid var(--color-border-tertiary);border-radius:12px;overflow:hidden;background:var(--color-background-primary);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);flex-wrap:wrap;gap:10px}
+.topbar-logo{font-size:14px;font-weight:600;color:var(--color-text-primary);display:flex;align-items:center;gap:8px}
+.topbar-logo span{font-size:11px;color:var(--color-text-secondary);font-weight:400}
+.nav{display:flex;gap:4px;flex-wrap:wrap}
+.nav-btn{font-size:12px;padding:6px 14px;border-radius:6px;border:0.5px solid transparent;cursor:pointer;background:transparent;color:var(--color-text-secondary);transition:all .15s;font-family:inherit}
+.nav-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-tertiary);font-weight:500}
+.nav-btn:hover:not(.active){background:var(--color-background-secondary)}
+.screen{display:none;padding:20px}
+.screen.active{display:block}
+.row{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.metric{flex:1;min-width:140px;background:var(--color-background-secondary);border-radius:8px;padding:14px}
+.metric-num{font-size:24px;font-weight:600;color:var(--color-text-primary);line-height:1}
+.metric-label{font-size:11px;color:var(--color-text-secondary);margin-top:5px}
+.metric-delta{font-size:11px;margin-top:4px}
+.delta-up{color:var(--color-text-success)}
+.delta-down{color:var(--color-text-danger)}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:10px;padding:16px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.bar-label{font-size:11px;color:var(--color-text-secondary);width:140px;flex-shrink:0}
+.bar-track{flex:1;height:8px;border-radius:4px;background:var(--color-background-secondary);overflow:hidden}
+.bar-fill{height:100%;border-radius:4px}
+.bar-val{font-size:11px;font-weight:600;color:var(--color-text-primary);width:32px;text-align:right;flex-shrink:0}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.tag-green{background:var(--color-background-success);color:var(--color-text-success)}
+.tag-amber{background:var(--color-background-warning);color:var(--color-text-warning)}
+.tag-red{background:var(--color-background-danger);color:var(--color-text-danger)}
+.tag-blue{background:var(--color-background-info);color:var(--color-text-info)}
+.insight-box{border-radius:8px;padding:11px 13px;font-size:12px;line-height:1.6;margin-bottom:8px}
+.insight-green{background:var(--color-background-success);color:var(--color-text-success)}
+.insight-amber{background:var(--color-background-warning);color:var(--color-text-warning)}
+.insight-blue{background:var(--color-background-info);color:var(--color-text-info)}
+.dept-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+.dept-row:last-child{border-bottom:none}
+.dept-name{flex:1;color:var(--color-text-primary);font-weight:500}
+.dept-sub{font-size:11px;color:var(--color-text-secondary);font-weight:400}
+.dept-score{font-size:14px;font-weight:600;width:36px;text-align:right}
+.alert-card{border:0.5px solid var(--color-border-danger);border-radius:10px;padding:16px;margin-bottom:12px;background:var(--color-background-primary)}
+.alert-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.alert-title{font-size:13px;font-weight:600;color:var(--color-text-primary)}
+.alert-sub{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+.evidence-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.evidence-item{flex:1;min-width:130px;background:var(--color-background-secondary);border-radius:6px;padding:10px;font-size:11px;color:var(--color-text-secondary);line-height:1.4}
+.evidence-item strong{display:block;font-size:12px;color:var(--color-text-primary);margin-bottom:3px}
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:7px 14px;border-radius:6px;border:0.5px solid var(--color-border-secondary);cursor:pointer;background:transparent;color:var(--color-text-primary);transition:all .15s;font-family:inherit}
+.btn:hover{background:var(--color-background-secondary)}
+.btn-danger{border-color:var(--color-border-danger);color:var(--color-text-danger)}
+.btn-danger:hover{background:var(--color-background-danger)}
+.btn-success{border-color:var(--color-border-success);color:var(--color-text-success)}
+.btn-success:hover{background:var(--color-background-success)}
+.timeline{position:relative;padding-left:20px;border-left:1.5px solid var(--color-border-tertiary);margin:8px 0}
+.tl-item{position:relative;margin-bottom:12px;font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+.tl-item::before{content:'';position:absolute;left:-24px;top:4px;width:7px;height:7px;border-radius:50%;background:var(--color-border-secondary);border:1.5px solid var(--color-background-primary)}
+.tl-item.flagged::before{background:var(--color-text-danger)}
+.tl-item strong{display:block;font-size:12px;color:var(--color-text-primary)}
+.section-label{font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px}
+.clip-player{background:var(--color-background-secondary);border-radius:8px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.play-btn{width:36px;height:36px;border-radius:50%;border:0.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;background:var(--color-background-primary)}
+.play-btn:hover{background:var(--color-background-secondary)}
+.clip-info{flex:1;min-width:150px}
+.clip-title{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+.clip-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.waveform{flex:2;height:28px;display:flex;align-items:center;gap:2px;min-width:120px}
+.wave-bar{width:3px;border-radius:2px;background:var(--color-border-secondary)}
+.audit-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px;flex-wrap:wrap;gap:6px}
+.audit-row:last-child{border-bottom:none}
+.col2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:600px){.col2{grid-template-columns:1fr}.bar-label{width:100px}}
+.footer-note{text-align:center;font-size:11px;color:var(--color-text-tertiary);margin-top:16px;padding-bottom:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-logo">
+      <i class="ti ti-eye" style="font-size:18px;color:var(--color-text-info)"></i>
+      ClassLens <span>by Redrob — prototype</span>
+    </div>
+    <div class="nav">
+      <button class="nav-btn active" onclick="show('faculty')"><i class="ti ti-user" style="font-size:13px;margin-right:4px"></i>Faculty view</button>
+      <button class="nav-btn" onclick="show('management')"><i class="ti ti-building" style="font-size:13px;margin-right:4px"></i>Management view</button>
+      <button class="nav-btn" onclick="show('flag')"><i class="ti ti-alert-triangle" style="font-size:13px;margin-right:4px"></i>Flag review</button>
+    </div>
+  </div>
+
+  <div class="screen active" id="screen-faculty">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:15px;font-weight:600;color:var(--color-text-primary)">Good morning, Dr. Priya Sharma</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">Week 11 of 18 — Computer Science Dept.</div>
+      </div>
+      <span class="tag tag-green"><i class="ti ti-trending-up" style="font-size:11px;margin-right:3px"></i>Improving</span>
+    </div>
+
+    <div class="row">
+      <div class="metric">
+        <div class="metric-num">74</div>
+        <div class="metric-label">Teaching effectiveness score</div>
+        <div class="metric-delta delta-up"><i class="ti ti-arrow-up" style="font-size:11px"></i> +11 from week 1</div>
+      </div>
+      <div class="metric">
+        <div class="metric-num">68%</div>
+        <div class="metric-label">Student interaction rate</div>
+        <div class="metric-delta delta-up"><i class="ti ti-arrow-up" style="font-size:11px"></i> +14% this semester</div>
+      </div>
+      <div class="metric">
+        <div class="metric-num">22 min</div>
+        <div class="metric-label">Avg engagement retention</div>
+        <div class="metric-delta delta-down"><i class="ti ti-arrow-down" style="font-size:11px"></i> drops at 25 min mark</div>
+      </div>
+      <div class="metric">
+        <div class="metric-num">Dept avg 61</div>
+        <div class="metric-label">Your score vs department</div>
+        <div class="metric-delta delta-up" style="color:var(--color-text-info)">Top 3 in department</div>
+      </div>
+    </div>
+
+    <div class="col2">
+      <div class="card">
+        <div class="card-title">Teaching dimensions <span class="tag tag-blue">Week 11</span></div>
+        <div class="bar-row"><div class="bar-label">Clarity of explanation</div><div class="bar-track"><div class="bar-fill" style="width:82%;background:var(--color-text-success)"></div></div><div class="bar-val">82</div></div>
+        <div class="bar-row"><div class="bar-label">Tone consistency</div><div class="bar-track"><div class="bar-fill" style="width:79%;background:var(--color-text-success)"></div></div><div class="bar-val">79</div></div>
+        <div class="bar-row"><div class="bar-label">Student interaction</div><div class="bar-track"><div class="bar-fill" style="width:68%;background:var(--color-text-info)"></div></div><div class="bar-val">68</div></div>
+        <div class="bar-row"><div class="bar-label">Engagement retention</div><div class="bar-track"><div class="bar-fill" style="width:61%;background:var(--color-text-warning)"></div></div><div class="bar-val">61</div></div>
+        <div class="bar-row"><div class="bar-label">Inclusive participation</div><div class="bar-track"><div class="bar-fill" style="width:58%;background:var(--color-text-warning)"></div></div><div class="bar-val">58</div></div>
+        <div class="bar-row"><div class="bar-label">Content pacing</div><div class="bar-track"><div class="bar-fill" style="width:71%;background:var(--color-text-info)"></div></div><div class="bar-val">71</div></div>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title">AI coaching insights this week</div>
+          <div class="insight-box insight-amber"><strong style="display:block;margin-bottom:3px">Engagement drops at 25 min</strong>Student interaction falls to near-zero after the 25-minute mark in 7 of your last 10 lectures. Consider a structured activity break or question round at this point.</div>
+          <div class="insight-box insight-blue"><strong style="display:block;margin-bottom:3px">Speaking pace above optimal</strong>Your average pace is 18% faster than optimal in the second half of lectures. Slowing down post-break correlates with higher retention scores across the department.</div>
+          <div class="insight-box insight-green"><strong style="display:block;margin-bottom:3px">Strong improvement trend</strong>Your tone consistency score has improved 23 points since week 3. You are on track to earn a recognition flag this semester.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Semester growth</div>
+          <div style="display:flex;align-items:flex-end;gap:4px;height:48px">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px"><div style="width:100%;height:30%;border-radius:3px 3px 0 0;background:var(--color-border-tertiary)"></div><div style="font-size:9px;color:var(--color-text-tertiary)">W1</div></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px"><div style="width:100%;height:38%;border-radius:3px 3px 0 0;background:var(--color-border-secondary)"></div><div style="font-size:9px;color:var(--color-text-tertiary)">W3</div></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px"><div style="width:100%;height:48%;border-radius:3px 3px 0 0;background:var(--color-border-secondary)"></div><div style="font-size:9px;color:var(--color-text-tertiary)">W5</div></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px"><div style="width:100%;height:55%;border-radius:3px 3px 0 0;background:var(--color-text-info);opacity:.5"></div><div style="font-size:9px;color:var(--color-text-tertiary)">W7</div></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px"><div style="width:100%;height:65%;border-radius:3px 3px 0 0;background:var(--color-text-info);opacity:.7"></div><div style="font-size:9px;color:var(--color-text-tertiary)">W9</div></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px"><div style="width:100%;height:78%;border-radius:3px 3px 0 0;background:var(--color-text-success)"></div><div style="font-size:9px;color:var(--color-text-tertiary)">W11</div></div>
+          </div>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-top:8px">Score: 63 → 74 over 11 weeks. Keep going — 15%+ improvement triggers recognition.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-management">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:15px;font-weight:600;color:var(--color-text-primary)">Institutional classroom intelligence</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">MIT Pune — Week 11 of 18 — No video. No recordings. Signals only.</div>
+      </div>
+      <span class="tag tag-red"><i class="ti ti-alert-triangle" style="font-size:11px;margin-right:3px"></i>1 active flag</span>
+    </div>
+
+    <div class="row">
+      <div class="metric">
+        <div class="metric-num">68</div>
+        <div class="metric-label">Institution health score</div>
+        <div class="metric-delta delta-up"><i class="ti ti-arrow-up" style="font-size:11px"></i> +6 from last semester</div>
+      </div>
+      <div class="metric">
+        <div class="metric-num">42</div>
+        <div class="metric-label">Faculty monitored (with consent)</div>
+        <div class="metric-delta" style="color:var(--color-text-secondary)">Across 6 departments</div>
+      </div>
+      <div class="metric">
+        <div class="metric-num">87%</div>
+        <div class="metric-label">Faculty improving this semester</div>
+        <div class="metric-delta delta-up"><i class="ti ti-arrow-up" style="font-size:11px"></i> vs 71% last sem</div>
+      </div>
+      <div class="metric">
+        <div class="metric-num">1</div>
+        <div class="metric-label">Active flags requiring review</div>
+        <div class="metric-delta delta-down" style="color:var(--color-text-danger)">High confidence — action warranted</div>
+      </div>
+    </div>
+
+    <div class="col2">
+      <div class="card">
+        <div class="card-title">Department health map <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400">anonymized scores</span></div>
+        <div class="dept-row"><div class="dept-name">Computer Science <div class="dept-sub">12 faculty</div></div><div class="tag tag-green">Healthy</div><div class="dept-score" style="color:var(--color-text-success)">74</div></div>
+        <div class="dept-row"><div class="dept-name">Mechanical Engg <div class="dept-sub">8 faculty</div></div><div class="tag tag-green">Healthy</div><div class="dept-score" style="color:var(--color-text-success)">71</div></div>
+        <div class="dept-row"><div class="dept-name">MBA <div class="dept-sub">9 faculty</div></div><div class="tag tag-blue">Average</div><div class="dept-score" style="color:var(--color-text-info)">63</div></div>
+        <div class="dept-row"><div class="dept-name">Civil Engg <div class="dept-sub">6 faculty</div></div><div class="tag tag-blue">Average</div><div class="dept-score" style="color:var(--color-text-info)">61</div></div>
+        <div class="dept-row"><div class="dept-name">Electronics <div class="dept-sub">4 faculty</div></div><div class="tag tag-amber">Watch</div><div class="dept-score" style="color:var(--color-text-warning)">54</div></div>
+        <div class="dept-row" style="border-left:2px solid var(--color-border-danger);padding-left:8px"><div class="dept-name">Physics <div class="dept-sub">3 faculty</div></div><div class="tag tag-red">Flagged</div><div class="dept-score" style="color:var(--color-text-danger)">41</div></div>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title">Recognition — top performers <span class="tag tag-green">This semester</span></div>
+          <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.6">
+            <div style="padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><strong style="color:var(--color-text-primary)">Dr. Priya Sharma</strong> — CS Dept. Score improved 17% this semester. Eligible for recognition flag on Redrob profile.</div>
+            <div style="padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><strong style="color:var(--color-text-primary)">Prof. Rajan Mehta</strong> — Mech. Score improved 22%. Highest engagement rate in department.</div>
+            <div style="padding:7px 0"><strong style="color:var(--color-text-primary)">Dr. Anita Kulkarni</strong> — MBA. Consistent top scorer for 3 semesters. Recommend for guest lecture listing.</div>
+          </div>
+        </div>
+        <div class="card" style="border-color:var(--color-border-danger)">
+          <div class="card-title" style="color:var(--color-text-danger)"><i class="ti ti-alert-triangle" style="font-size:14px;margin-right:6px"></i>Active flag — Physics Dept.</div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:10px">Repeated verbal aggression pattern detected across 14 sessions. Confidence: 91%. Encrypted clip available for authorized review.</div>
+          <button class="btn btn-danger" onclick="show('flag')"><i class="ti ti-eye" style="font-size:13px"></i> Review with dual authorization</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-flag">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:15px;font-weight:600;color:var(--color-text-primary)">Flag review — authorized access</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">Dual-key authorization required. This session is being logged.</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="tag tag-green"><i class="ti ti-lock" style="font-size:11px;margin-right:3px"></i>Dean authorized</span>
+        <span class="tag tag-green"><i class="ti ti-lock" style="font-size:11px;margin-right:3px"></i>Grievance Officer authorized</span>
+      </div>
+    </div>
+
+    <div class="alert-card">
+      <div class="alert-header">
+        <div>
+          <div class="alert-title">Verbal aggression pattern — Physics Department</div>
+          <div class="alert-sub">Faculty ID: PHY-003 · Pattern first detected: Week 4 · Confidence: 91%</div>
+        </div>
+        <span class="tag tag-red">High confidence</span>
+      </div>
+
+      <div class="evidence-row">
+        <div class="evidence-item"><strong>Sessions flagged</strong>14 of 22 lectures this semester</div>
+        <div class="evidence-item"><strong>Confidence score</strong>91% — threshold is 85%</div>
+        <div class="evidence-item"><strong>Pattern type</strong>Verbal aggression · Public humiliation</div>
+        <div class="evidence-item"><strong>Clip duration</strong>30 seconds · AES-256 encrypted</div>
+      </div>
+
+      <div class="section-label" style="margin-top:14px">Pattern timeline</div>
+      <div class="timeline">
+        <div class="tl-item"><strong>Week 4 — first occurrence</strong>Aggressive tone detected. Single session — not flagged. Discarded per standard protocol.</div>
+        <div class="tl-item"><strong>Week 6 — pattern emerging</strong>Second occurrence. Cross-session engine begins tracking. Confidence: 62%.</div>
+        <div class="tl-item"><strong>Week 8 — pattern confirmed</strong>5 sessions flagged. Confidence crosses 80% threshold. Monitoring intensified.</div>
+        <div class="tl-item flagged"><strong>Week 11 — flag triggered</strong>14 sessions. Confidence: 91%. Encrypted clip preserved. Management alerted. You are now reviewing.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Encrypted clip — playback</div>
+      <div class="clip-player">
+        <button class="play-btn" aria-label="Play clip" onclick="this.innerHTML=this.innerHTML.includes('player-play')?'<i class=\'ti ti-player-pause\' style=\'font-size:16px\'></i>':'<i class=\'ti ti-player-play\' style=\'font-size:16px\'></i>'">
+          <i class="ti ti-player-play" style="font-size:16px"></i>
+        </button>
+        <div class="clip-info">
+          <div class="clip-title">Clip · Week 11 · Tuesday 10:42 AM · 30 seconds</div>
+          <div class="clip-sub">AES-256 · Access logged · Not downloadable</div>
+        </div>
+        <div class="waveform" id="waveform"></div>
+      </div>
+      <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.6;padding:10px 12px;background:var(--color-background-secondary);border-radius:6px">
+        <strong style="color:var(--color-text-primary)">AI transcript summary:</strong> Faculty member uses dismissive language directed at a student who answered a question incorrectly. Tone classification: aggressive (94%). Language flag: public humiliation pattern. Student response: silence. Duration of incident: 28 seconds.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Audit trail <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400">immutable log</span></div>
+      <div class="audit-row"><span style="color:var(--color-text-secondary)">Today 09:14</span><span>Dean Dr. A. Patil authorized access</span><span class="tag tag-blue">Logged</span></div>
+      <div class="audit-row"><span style="color:var(--color-text-secondary)">Today 09:17</span><span>Grievance Officer Ms. R. Joshi authorized access</span><span class="tag tag-blue">Logged</span></div>
+      <div class="audit-row"><span style="color:var(--color-text-secondary)">Today 09:19</span><span>Clip accessed for review — this session</span><span class="tag tag-amber">Active</span></div>
+    </div>
+
+    <div class="col2">
+      <button class="btn btn-danger" style="width:100%;justify-content:center;padding:12px" onclick="alert('Action initiated. Faculty ID PHY-003 will be notified. HR process begins. This action is logged.')"><i class="ti ti-alert-triangle" style="font-size:14px"></i> Initiate formal review process</button>
+      <button class="btn btn-success" style="width:100%;justify-content:center;padding:12px" onclick="alert('Flag dismissed. Evidence archived. Pattern monitoring continues.')"><i class="ti ti-check" style="font-size:14px"></i> Dismiss — context reviewed, no action</button>
+    </div>
+  </div>
+</div>
+<div class="footer-note">ClassLens — AI-powered classroom intelligence · Built for India.Runs Track 03 · Powered by Redrob</div>
+</div>
+
+<script>
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    const t=b.textContent.toLowerCase();
+    if((id==='flag'&&t.includes('flag'))||(id==='management'&&t.includes('management'))||(id==='faculty'&&t.includes('faculty')))b.classList.add('active');
+  });
+}
+const wf=document.getElementById('waveform');
+const heights=[4,8,14,20,16,10,18,24,16,12,20,28,22,16,10,14,18,12,8,14,20,16,10,6];
+heights.forEach(h=>{const d=document.createElement('div');d.className='wave-bar';d.style.height=h+'px';wf.appendChild(d);});
+</script>
+</body>
+</html>
